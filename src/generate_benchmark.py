@@ -103,7 +103,7 @@ def write_row(csv_writer, mode, moves, candidate, is_legal):
     moves_str = moves_str[:-1]
     text_moves = f'Given a chess game starting with the moves {moves_str}'
     prompt = text_moves + f', is the move {len(moves) // 2+1}. {candidate} legal?'
-    csv_writer.writerow((mode, move_count, prompt, 'Yes' if is_legal else False))
+    csv_writer.writerow((mode, move_count, prompt, is_legal))
 
 
 def main():
@@ -112,7 +112,7 @@ def main():
         os.mkdir(ARTIFACTS_DIR)
     train_dataset = zip(*gen_random_games(2500//2, 4))
     validation_dataset = zip(*gen_random_games(500//2, 4))
-    test_dataset = zip(*gen_random_games(100//2, 4))
+    test_dataset = zip(*gen_random_games(300//2, 4))
     test_dataset_short = zip(*gen_random_games(100//2, 2))
     test_dataset_long = zip(*gen_random_games(100//2, 10))
 
