@@ -60,11 +60,11 @@ def _find_random_legal_move(board: chess.Board):
     return next(legal_moves_iter)
 
 
-def gen_random_games():
+def gen_random_games(game_number):
     first_moves_list = []
     legal_moves = []
     illegal_moves = []
-    for _ in range(2500//2):
+    for _ in range(game_number):
         board = chess.Board()
         # Perform random moves
         moves = []
@@ -88,7 +88,6 @@ def gen_random_games():
             for m in board_copy.legal_moves:
                 if m not in board.legal_moves:
                     illegal_move = board_copy.san(m)
-        print(board, legal_move, illegal_move)
         first_moves_list.append(tuple(moves))
         legal_moves.append(legal_move)
         illegal_moves.append(illegal_move)
@@ -96,25 +95,36 @@ def gen_random_games():
     return first_moves_list, legal_moves, illegal_moves
 
 
+def write_row(csv_writer, mode, moves, candidate, is_legal):
+    moves_str = ''
+    for i in range(len(moves) // 2):
+        moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
+    moves_str = moves_str[:-1]
+    text_moves = f'Given a chess game starting with the moves {moves_str}'
+    prompt = text_moves + f', is the move {len(moves) // 2+1}. {candidate} legal?'
+    csv_writer.writerow((mode, prompt, 'Yes' if is_legal else False))
+
+
 def main():
     if not os.path.exists(ARTIFACTS_DIR):
         print('Creting artifacts directory')
         os.mkdir(ARTIFACTS_DIR)
-    first_moves_list, legal_moves, illegal_moves = gen_random_games()
-    print(f'Found {len(first_moves_list)} first moves sequences')
+    train_dataset = zip(*gen_random_games(2500//2))
+    validation_dataset = zip(*gen_random_games(500//2))
+    test_dataset = zip(*gen_random_games(100//2))
+    
     with open(CSV_FILE, "w", newline="") as csv_f:
         csv_writer = csv.writer(csv_f)
-        for moves, lm, ilm in zip(first_moves_list, legal_moves, illegal_moves):
-            moves_str = ''
-            for i in range(len(moves) // 2):
-                moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
-            moves_str = moves_str[:-1]
-            text_moves = f'Given a chess game starting with the moves {moves_str}'
-            legal_question = text_moves + f', is the move {len(moves) // 2+1}. {lm} legal?'
-            illegal_question = text_moves + f', is the move {len(moves) // 2+1}. {ilm} legal?'
-            csv_writer.writerow((legal_question, 'Yes'))
-            csv_writer.writerow((illegal_question, 'No'))
-
+        csv_writer.writerow(['mode', 'prompt', 'expected'])
+        for moves, lm, ilm in train_dataset:
+            write_row(csv_writer, 'train', moves, lm, True)
+            write_row(csv_writer, 'train', moves, ilm, False)
+        for moves, lm, ilm in validation_dataset:
+            write_row(csv_writer, 'val', moves, lm, True)
+            write_row(csv_writer, 'val', moves, ilm, False)
+        for moves, lm, ilm in test_dataset:
+            write_row(csv_writer, 'test', moves, lm, True)
+            write_row(csv_writer, 'test', moves, ilm, False)
 
 if __name__ == '__main__':
     main()
