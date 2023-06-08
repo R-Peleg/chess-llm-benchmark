@@ -51,7 +51,15 @@ def main():
                 illegal_moves.append(illegal_move)
     print(f'Found {len(first_moves_list)} first moves sequences')
     for moves, lm, ilm in zip(first_moves_list, legal_moves, illegal_moves):
-        print(moves, lm, ilm)
+        moves_str = ''
+        for i in range(len(moves) // 2):
+            moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
+        moves_str = moves_str[:-1]
+        text_moves = f'Given a chess game starting with the moves {moves_str}'
+        legal_question = text_moves + f', is the move {lm} legal?'
+        illegal_question = text_moves + f', is the move {ilm} legal?'
+        print(legal_question)
+        print(illegal_question)
 
 
 
