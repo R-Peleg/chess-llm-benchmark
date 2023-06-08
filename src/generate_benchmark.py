@@ -6,6 +6,7 @@ import random
 
 ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), os.pardir, 'artifacts')
 PGN_FILE = os.path.join(ARTIFACTS_DIR, 'games.pgn')
+CSV_FILE = os.path.join(ARTIFACTS_DIR, 'dataset.csv')
 
 def main():
     if not os.path.exists(ARTIFACTS_DIR):
@@ -56,8 +57,8 @@ def main():
             moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
         moves_str = moves_str[:-1]
         text_moves = f'Given a chess game starting with the moves {moves_str}'
-        legal_question = text_moves + f', is the move {lm} legal?'
-        illegal_question = text_moves + f', is the move {ilm} legal?'
+        legal_question = text_moves + f', is the move {len(moves) // 2}. {lm} legal?'
+        illegal_question = text_moves + f', is the move {len(moves) // 2}. {ilm} legal?'
         print(legal_question)
         print(illegal_question)
 
