@@ -3,6 +3,7 @@ import requests
 import chess
 import chess.pgn
 import random
+import csv
 
 ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), os.pardir, 'artifacts')
 PGN_FILE = os.path.join(ARTIFACTS_DIR, 'games.pgn')
@@ -51,17 +52,18 @@ def main():
                 legal_moves.append(moves[-1])
                 illegal_moves.append(illegal_move)
     print(f'Found {len(first_moves_list)} first moves sequences')
-    for moves, lm, ilm in zip(first_moves_list, legal_moves, illegal_moves):
-        moves_str = ''
-        for i in range(len(moves) // 2):
-            moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
-        moves_str = moves_str[:-1]
-        text_moves = f'Given a chess game starting with the moves {moves_str}'
-        legal_question = text_moves + f', is the move {len(moves) // 2}. {lm} legal?'
-        illegal_question = text_moves + f', is the move {len(moves) // 2}. {ilm} legal?'
-        print(legal_question)
-        print(illegal_question)
-
+    with open(CSV_FILE, "w", newline="") as csv_f:
+        csv_writer = csv.writer(csv_f)
+        for moves, lm, ilm in zip(first_moves_list, legal_moves, illegal_moves):
+            moves_str = ''
+            for i in range(len(moves) // 2):
+                moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
+            moves_str = moves_str[:-1]
+            text_moves = f'Given a chess game starting with the moves {moves_str}'
+            legal_question = text_moves + f', is the move {len(moves) // 2+1}. {lm} legal?'
+            illegal_question = text_moves + f', is the move {len(moves) // 2+1}. {ilm} legal?'
+            csv_writer.writerow((legal_question, 'Yes'))
+            csv_writer.writerow((illegal_question, 'No'))
 
 
 if __name__ == '__main__':
