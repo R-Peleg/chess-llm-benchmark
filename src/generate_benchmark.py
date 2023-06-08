@@ -60,7 +60,7 @@ def _find_random_legal_move(board: chess.Board):
     return next(legal_moves_iter)
 
 
-def gen_random_games(game_number):
+def gen_random_games(game_number, move_count):
     first_moves_list = []
     legal_moves = []
     illegal_moves = []
@@ -68,7 +68,7 @@ def gen_random_games(game_number):
         board = chess.Board()
         # Perform random moves
         moves = []
-        for _ in range(4):
+        for _ in range(move_count):
             move = _find_random_legal_move(board)
             moves.append(board.san(move))
             board.push(move)
@@ -96,26 +96,29 @@ def gen_random_games(game_number):
 
 
 def write_row(csv_writer, mode, moves, candidate, is_legal):
+    move_count = len(moves)
     moves_str = ''
     for i in range(len(moves) // 2):
         moves_str += f'{i+1}. {moves[i*2]} {moves[i*2+1]} '
     moves_str = moves_str[:-1]
     text_moves = f'Given a chess game starting with the moves {moves_str}'
     prompt = text_moves + f', is the move {len(moves) // 2+1}. {candidate} legal?'
-    csv_writer.writerow((mode, prompt, 'Yes' if is_legal else False))
+    csv_writer.writerow((mode, move_count, prompt, 'Yes' if is_legal else False))
 
 
 def main():
     if not os.path.exists(ARTIFACTS_DIR):
         print('Creting artifacts directory')
         os.mkdir(ARTIFACTS_DIR)
-    train_dataset = zip(*gen_random_games(2500//2))
-    validation_dataset = zip(*gen_random_games(500//2))
-    test_dataset = zip(*gen_random_games(100//2))
-    
+    train_dataset = zip(*gen_random_games(2500//2, 4))
+    validation_dataset = zip(*gen_random_games(500//2, 4))
+    test_dataset = zip(*gen_random_games(100//2, 4))
+    test_dataset_short = zip(*gen_random_games(100//2, 2))
+    test_dataset_long = zip(*gen_random_games(100//2, 10))
+
     with open(CSV_FILE, "w", newline="") as csv_f:
         csv_writer = csv.writer(csv_f)
-        csv_writer.writerow(['mode', 'prompt', 'expected'])
+        csv_writer.writerow(['mode', 'move_count', 'prompt', 'expected'])
         for moves, lm, ilm in train_dataset:
             write_row(csv_writer, 'train', moves, lm, True)
             write_row(csv_writer, 'train', moves, ilm, False)
@@ -125,6 +128,13 @@ def main():
         for moves, lm, ilm in test_dataset:
             write_row(csv_writer, 'test', moves, lm, True)
             write_row(csv_writer, 'test', moves, ilm, False)
+        for moves, lm, ilm in test_dataset_short:
+            write_row(csv_writer, 'test', moves, lm, True)
+            write_row(csv_writer, 'test', moves, ilm, False)
+        for moves, lm, ilm in test_dataset_long:
+            write_row(csv_writer, 'test', moves, lm, True)
+            write_row(csv_writer, 'test', moves, ilm, False)
+
 
 if __name__ == '__main__':
     main()
