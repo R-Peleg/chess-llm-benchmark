@@ -50,11 +50,56 @@ def gen_real_sample():
                 illegal_moves.append(illegal_move)
     return first_moves_list, legal_moves, illegal_moves
 
+def _find_random_legal_move(board: chess.Board):
+    legal_moves = board.legal_moves
+    legal_move_idx = random.randint(0, legal_moves.count() - 1)
+    legal_moves_iter = iter(legal_moves)
+    for _ in range(legal_move_idx - 1):
+        next(legal_moves_iter)
+    return next(legal_moves_iter)
+
+
+def gen_random_games():
+    first_moves_list = []
+    legal_moves = []
+    illegal_moves = []
+    for _ in range(2500//2):
+        board = chess.Board()
+        # Perform random moves
+        moves = []
+        for _ in range(4):
+            move = _find_random_legal_move(board)
+            moves.append(board.san(move))
+            board.push(move)
+        # Find a legal move
+        legal_move = board.san(_find_random_legal_move(board))
+        # Find an illegal move. We try to find a move that would be legal if a pawn was missing
+        illegal_move = None
+        board_copy = chess.Board(board.fen())
+        while illegal_move is None:
+            white_pawns = board_copy.pieces(chess.PAWN, chess.WHITE)
+            white_pawns_iter = iter(white_pawns)
+            idx = random.randint(0, len(white_pawns) - 1)
+            for _ in range(idx):
+                next(white_pawns_iter)
+            sq = next(white_pawns_iter)
+            board_copy.remove_piece_at(sq)
+            for m in board_copy.legal_moves:
+                if m not in board.legal_moves:
+                    illegal_move = board_copy.san(m)
+        print(board, legal_move, illegal_move)
+        first_moves_list.append(tuple(moves))
+        legal_moves.append(legal_move)
+        illegal_moves.append(illegal_move)
+
+    return first_moves_list, legal_moves, illegal_moves
+
+
 def main():
     if not os.path.exists(ARTIFACTS_DIR):
         print('Creting artifacts directory')
         os.mkdir(ARTIFACTS_DIR)
-    first_moves_list, legal_moves, illegal_moves = gen_real_sample()
+    first_moves_list, legal_moves, illegal_moves = gen_random_games()
     print(f'Found {len(first_moves_list)} first moves sequences')
     with open(CSV_FILE, "w", newline="") as csv_f:
         csv_writer = csv.writer(csv_f)
