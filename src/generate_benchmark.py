@@ -9,10 +9,7 @@ ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), os.pardir, 'artifacts')
 PGN_FILE = os.path.join(ARTIFACTS_DIR, 'games.pgn')
 CSV_FILE = os.path.join(ARTIFACTS_DIR, 'dataset.csv')
 
-def main():
-    if not os.path.exists(ARTIFACTS_DIR):
-        print('Creting artifacts directory')
-        os.mkdir(ARTIFACTS_DIR)
+def gen_real_sample():
     if not os.path.exists(PGN_FILE):
         print('Downloading games')
         response = requests.get('https://www.pgnmentor.com/events/WorldCup2021.pgn')
@@ -51,6 +48,13 @@ def main():
                 first_moves_list.append(moves_tuple)
                 legal_moves.append(moves[-1])
                 illegal_moves.append(illegal_move)
+    return first_moves_list, legal_moves, illegal_moves
+
+def main():
+    if not os.path.exists(ARTIFACTS_DIR):
+        print('Creting artifacts directory')
+        os.mkdir(ARTIFACTS_DIR)
+    first_moves_list, legal_moves, illegal_moves = gen_real_sample()
     print(f'Found {len(first_moves_list)} first moves sequences')
     with open(CSV_FILE, "w", newline="") as csv_f:
         csv_writer = csv.writer(csv_f)
