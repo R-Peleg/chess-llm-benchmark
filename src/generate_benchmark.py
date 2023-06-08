@@ -8,6 +8,7 @@ import csv
 ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), os.pardir, 'artifacts')
 PGN_FILE = os.path.join(ARTIFACTS_DIR, 'games.pgn')
 CSV_FILE = os.path.join(ARTIFACTS_DIR, 'dataset.csv')
+random.seed(42)
 
 def gen_real_sample():
     if not os.path.exists(PGN_FILE):
