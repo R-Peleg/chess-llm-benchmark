@@ -103,7 +103,7 @@ def write_row(csv_writer, mode, moves, candidate, is_legal):
     moves_str = moves_str[:-1]
     text_moves = f'Given a chess game starting with the moves {moves_str}'
     prompt = text_moves + f', is the move {len(moves) // 2+1}. {candidate} legal?'
-    csv_writer.writerow((mode, move_count, prompt, is_legal))
+    csv_writer.writerow((mode, move_count, prompt, 'Yes' if is_legal else 'No'))
 
 
 def main():
